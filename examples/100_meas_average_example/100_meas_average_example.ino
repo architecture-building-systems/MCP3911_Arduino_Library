@@ -8,13 +8,13 @@ int CLOCK_PIN = 9;  //Pin 9 is the OC1A-Pin of the Arduino Pro Mini and goes to 
 int CS_PIN = 8;     //Pin 8 of the Arduino Pro Mini goes to the CS-Pin of the MCP3911
 
 volatile uint8_t index = 0; //Array-Index
-long values_ch0[30] = {};  //Array for the 30 measurements
+long values_ch0[100] = {};  //Array for the 100 measurements
  
 void ch0_data_interrupt(void)   //Interrupt function
 {
   values_ch0[index] = mcp3911.read_ch0_raw();
   index++;
-  if(index > 29)
+  if(index > 99)
     mcp3911.enter_reset_mode(); //Enter reset mode to stop any more interrupts
 }
 
@@ -53,27 +53,28 @@ void setup() {
 
   mcp3911.configure(settings);     //Configure the MCP3911 with the settings above
 
-  attachInterrupt(digitalPinToInterrupt(3), ch0_data_interrupt, FALLING);
+  attachInterrupt(digitalPinToInterrupt(3), ch0_data_interrupt, FALLING);  //Call "ch0_data_interrupt" whenever an edge on the DR-Pin occurs
   
   delay(100);
 }
 
 void loop() {
- //If 30 measurement interrupts have taken place  
+ //If 100 measurement interrupts have taken place  
  //calculate the average of all the measurements that were taken into "values_ch0[]".
- if(index > 29){              
+ if(index > 99){              
     double average = 0;              
-    for(int i = 0; i<30; i++)
+    for(int i = 0; i<100; i++)
     {              
-      average += mcp3911.data_to_voltage(values_ch0[i]);
+	  average += values_ch0[i];
       //Serial.println(mcp3911.data_to_voltage(values_ch0[i]),8);
     }
+	  float voltage = mcp3911.data_to_voltage(average/100);
     Serial.print("Voltage CH0 = ");
-    Serial.print((average/30), 8);
+    Serial.print(voltage, 8);
     Serial.print("V\n");
 
     index = 0;
-    delay(10000);
+    delay(1000);
     mcp3911.exit_reset_mode(); //Exit reset mode to start interrupts again.
  }
 }
