@@ -188,4 +188,26 @@ void MCP3911::exit_reset_mode(void)
     digitalWrite(CS_PIN,HIGH);
 }
 
+//Write given offset to offset-register CH0
+void MCP3911::write_offset_ch0(long offset)
+{
+	digitalWrite(CS_PIN, LOW);
+	SPI.transfer(ADDR_BITS | (REG_OFFCAL_CH0 << 1)); //Control Byte
+	SPI.transfer(offset >> 16);
+	SPI.transfer(offset >> 8);
+	SPI.transfer(offset >> 0);
+	digitalWrite(CS_PIN, HIGH);
+}	
+
+//Write given offset to offset-register CH1
+void MCP3911::write_offset_ch1(long offset)
+{
+	digitalWrite(CS_PIN, LOW);
+	SPI.transfer(ADDR_BITS | (REG_OFFCAL_CH1 << 1)); //Control Byte
+	SPI.transfer(offset >> 16);
+	SPI.transfer(offset >> 8);
+	SPI.transfer(offset >> 0);
+	digitalWrite(CS_PIN, HIGH);
+}	
+
 

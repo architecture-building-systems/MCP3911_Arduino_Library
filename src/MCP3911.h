@@ -20,6 +20,8 @@
 #define REG_STATCOM2    0x0B
 #define REG_CONFIG1     0x0C
 #define REG_CONFIG2     0x0D
+#define REG_OFFCAL_CH0  0x0E
+#define REG_OFFCAL_CH1  0x14
 
 struct REGISTER_SETTINGS{
     //PHASE-SETTINGS
@@ -62,6 +64,8 @@ class MCP3911
 		float data_to_voltage(long data);
 		void enter_reset_mode();
 		void exit_reset_mode();
+		void write_offset_ch0(long offset);
+		void write_offset_ch1(long offset);
 	
 	private:
 		int CLOCK_PIN;
