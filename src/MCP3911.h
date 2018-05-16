@@ -50,6 +50,7 @@ struct REGISTER_SETTINGS{
     uint8_t CLKEXT;          
 }; 
 
+
 class MCP3911
 {
 	public:
@@ -57,19 +58,18 @@ class MCP3911
 	    void begin(int _CLOCK_PIN, int _CS_PIN);
 		void generate_CLK(void);
 		void configure(REGISTER_SETTINGS setting);
-		float read_ch0(void);
-		float read_ch1(void);
-	    long read_ch0_raw(void);
-		long read_ch1_raw(void);
-		float data_to_voltage(long data);
+		float read_chX(uint8_t channel);
+	    long read_raw_data(uint8_t channel);
+		float data_to_voltage(long data, uint8_t channel);
 		void enter_reset_mode();
 		void exit_reset_mode();
-		void write_offset_ch0(long offset);
-		void write_offset_ch1(long offset);
+		void write_offset(long offset, uint8_t channel);
+		uint8_t read_register(uint8_t reg);
 	
 	private:
 		int CLOCK_PIN;
 		int CS_PIN;
+		REGISTER_SETTINGS settings;
 };
 
 #endif

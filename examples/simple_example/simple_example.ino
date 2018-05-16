@@ -27,7 +27,7 @@ void setup() {
   settings.READ      = 0b10;       //Adress counter loops register types
   settings.WRITE     = 0b1;        //Adress counter loops entire register map
   settings.WIDTH     = 0b11;       //CH0 and CH1 are in 24bit-mode
-  settings.EN_OFFCAL = 0b1;        //Digital offset calibration on both channels disabled
+  settings.EN_OFFCAL = 0b0;        //Digital offset calibration on both channels disabled
   settings.EN_GAINCAL = 0b0;       //Group delay on both channels disabled
   //CONFIG-SETTINGS
   settings.PRE       = 0b00;       //AMCLK = MCLK
@@ -44,8 +44,8 @@ void setup() {
 }
 
 void loop() {
-  float value0 = mcp3911.read_ch0(); //Read value of CH0
-  float value1 = mcp3911.read_ch1(); //Read value of CH1
+  float value0 = mcp3911.read_chX(REG_CHANNEL0); //Read value of CH0
+  float value1 = mcp3911.read_chX(REG_CHANNEL1); //Read value of CH1
   
   Serial.print("Voltage CH0 = ");       //Print value of CH0
   Serial.print(value0, 8);

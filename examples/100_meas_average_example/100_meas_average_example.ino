@@ -9,19 +9,21 @@ int CS_PIN = 8;     //Pin 8 of the Arduino Pro Mini goes to the CS-Pin of the MC
 
 volatile uint8_t index = 0; //Array-Index
 long values_ch0[100] = {};  //Array for the 100 measurements
- 
-void ch0_data_interrupt(void)   //Interrupt function
+
+//Interrupt function
+void ch0_data_interrupt(void)  
 {
-  values_ch0[index] = mcp3911.read_ch0_raw();
+  values_ch0[index] = mcp3911.read_raw_data(REG_CHANNEL0);
   index++;
   if(index > 99)
     mcp3911.enter_reset_mode(); //Enter reset mode to stop any more interrupts
 }
 
+//Calibration function
 void ch0_calibrate_offset(void)
 {
-  mcp3911.enter_reset_mode();   //Enter reset mode to prevent any measurements from being taken
-  mcp3911.write_offset_ch0(0);  //Write initial offset to zero
+  mcp3911.enter_reset_mode();               //Enter reset mode to prevent any measurements from being taken
+  mcp3911.write_offset(0, REG_OFFCAL_CH0);  //Write initial offset to zero
 
   //Start 100 measurements with interrupts
   index = 0;              
@@ -35,26 +37,25 @@ void ch0_calibrate_offset(void)
   long offset = (average/100) * -1;   //We multiply by -1 since the offset gets added,
                                       //but to be correct we want it subtracted
 
-  mcp3911.write_offset_ch0(offset);   //Write offset to register
+  mcp3911.write_offset(offset, REG_OFFCAL_CH0);   //Write offset to register
    
-  float offset_volt = mcp3911.data_to_voltage(offset);
+  float offset_volt = mcp3911.data_to_voltage((average/100), REG_CHANNEL0);
   Serial.print("Offset = ");
   Serial.print(offset_volt, 8);
   Serial.print("V\n");
+  Serial.println("Substracting offset from measured data..");
 
   index = 0;
   mcp3911.exit_reset_mode(); //Exit reset mode to start interrupts again.
 }                                     
-
 
 void setup() {
   Serial.begin(9600);
   
   mcp3911.begin(CLOCK_PIN, CS_PIN);     //Initialize MCP3911
   mcp3911.generate_CLK();               //Generate 4MHZ clock on CLOCK_PIN
-
-  REGISTER_SETTINGS settings = {};
- 
+  
+  REGISTER_SETTINGS settings = {}; 
   //PHASE-SETTINGS
   settings.PHASE    = 0;           //Phase shift between CH0/CH1 is 0
   //GAIN-SETTINGS
@@ -97,13 +98,14 @@ void loop() {
     for(int i = 0; i<100; i++){             
 	    average += values_ch0[i];
     }
-	  float voltage = mcp3911.data_to_voltage(average/100);
+
+	  float voltage_ch0 = mcp3911.data_to_voltage(average/100, REG_CHANNEL0);   //Data to voltage needs the gain setting of the chosen channel
     Serial.print("Voltage CH0 = ");
-    Serial.print(voltage, 8);
+    Serial.print(voltage_ch0, 8);
     Serial.print("V\n");
 
     index = 0;
-    delay(1000);
+    delay(3000);
     mcp3911.exit_reset_mode(); //Exit reset mode to start interrupts again.
  }
 }

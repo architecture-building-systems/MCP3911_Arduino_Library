@@ -37,8 +37,10 @@ void MCP3911::generate_CLK(void)
 }
 
 //Reset and configure the MCP3911 with user-defined settings
-void MCP3911::configure(REGISTER_SETTINGS settings)
+void MCP3911::configure(REGISTER_SETTINGS _settings)
 {
+	settings = _settings;							//Load settings into private variable
+	
 	//Put both ADC's into reset mode to enable a configuration in one write-cycle.
 	digitalWrite(CS_PIN,LOW);
 	SPI.transfer(ADDR_BITS | (REG_CONFIG2 << 1));  //Control Byte: Choose CONFIG2-Register
@@ -71,143 +73,134 @@ void MCP3911::configure(REGISTER_SETTINGS settings)
 	digitalWrite(CS_PIN,HIGH);
 }
 
-//Read channel_0, convert it to a readable form and return it. 
+//Read chosen channel, convert it to a readable form and return it. 
 //Function only usable in 24-bit mode.
-float MCP3911::read_ch0(void)
+float MCP3911::read_chX(uint8_t channel)
 {
 	digitalWrite(CS_PIN, LOW);
-	SPI.transfer(ADDR_BITS | (REG_CHANNEL0 << 1) | 1); //Control Byte
+	SPI.transfer(ADDR_BITS | (channel << 1) | 1); //Control Byte
 	
-	byte ch0_upper = SPI.transfer(0x00);			   //Read the three bytes
-	byte ch0_middle = SPI.transfer(0x00);
-	byte ch0_lower = SPI.transfer(0x00);
+	byte upper = SPI.transfer(0x00);			   //Read the three bytes
+	byte middle = SPI.transfer(0x00);
+	byte lower = SPI.transfer(0x00);
 	
 	digitalWrite(CS_PIN, HIGH);
 	
 	//Concat the three bytes.
 	//When I cast the three bytes to long, they will be shifted with respect to their sign. 
 	//The back-shift by 8 bit at the end makes sure that the sign is at bit 32 instead of bit 24.
-	long combined_value = ((((long)ch0_upper << 24) | ((long)ch0_middle << 16) | (long)ch0_lower<<8) >> 8); 
+	long combined_value = ((((long)upper << 24) | ((long)middle << 16) | (long)lower<<8) >> 8); 
  
     //Conversion to readable form according to datasheet
-	float voltage_ch0 = (combined_value * 1.2)/(8388608*1.5);  
+	float voltage = data_to_voltage(combined_value, channel);
 	
-	return voltage_ch0;
-}
-
-//Read channel_1, convert it to a readable form and return it. 
-//Function only usable in 24-bit mode.
-float MCP3911::read_ch1(void)
-{
-	digitalWrite(CS_PIN, LOW);
-	SPI.transfer(ADDR_BITS | (REG_CHANNEL1 << 1) | 1); //Control Byte
-	
-	byte ch1_upper = SPI.transfer(0x00);			   //Read the three bytes
-	byte ch1_middle = SPI.transfer(0x00);
-	byte ch1_lower = SPI.transfer(0x00);
-	
-	digitalWrite(CS_PIN, HIGH);
-	
-	//Concat the three bytes.
-	//When I cast the three bytes to long, they will be shifted with respect to their sign. 
-	//The back-shift by 8 bit at the end makes sure that the sign is at bit 32 instead of bit 24.
-	long combined_value = ((((long)ch1_upper << 24) | ((long)ch1_middle << 16) | (long)ch1_lower<<8) >> 8); 
- 
-    //Conversion to readable form according to datasheet.
-	float voltage_ch1 = (combined_value * 1.2)/(8388608*1.5);  
-	
-	return voltage_ch1;
-}
-
-//Read channel_0 and return raw data. 
-//Function only usable in 24-bit mode.
-long MCP3911::read_ch0_raw(void)
-{
-	digitalWrite(CS_PIN, LOW);
-	SPI.transfer(ADDR_BITS | (REG_CHANNEL0 << 1) | 1); //Control Byte
-	
-	byte ch0_upper = SPI.transfer(0x00);			   //Read the three bytes
-	byte ch0_middle = SPI.transfer(0x00);
-	byte ch0_lower = SPI.transfer(0x00);
-	
-	digitalWrite(CS_PIN, HIGH);
-	
-	//Concat the three bytes.
-	//When I cast the three bytes to long, they will be shifted with respect to their sign. 
-	//The back-shift by 8 bit at the end makes sure that the sign is at bit 32 instead of bit 24.
-	long combined_value = ((((long)ch0_upper << 24) | ((long)ch0_middle << 16) | (long)ch0_lower<<8) >> 8); 
-	
-	return combined_value;
-}
-
-//Read channel_1 and return raw data.
-//Function only usable in 24-bit mode.
-long MCP3911::read_ch1_raw(void)
-{
-	digitalWrite(CS_PIN, LOW);
-	SPI.transfer(ADDR_BITS | (REG_CHANNEL1 << 1) | 1); //Control Byte
-	
-	byte ch1_upper = SPI.transfer(0x00);			   //Read the three bytes
-	byte ch1_middle = SPI.transfer(0x00);
-	byte ch1_lower = SPI.transfer(0x00);
-	
-	digitalWrite(CS_PIN, HIGH);
-	
-	//Concat the three bytes.
-	//When I cast the three bytes to long, they will be shifted with respect to their sign. 
-	//The back-shift by 8 bit at the end makes sure that the sign is at bit 32 instead of bit 24.
-	long combined_value = ((((long)ch1_upper << 24) | ((long)ch1_middle << 16) | (long)ch1_lower<<8) >> 8); 
-	
-	return combined_value;
-}
-
-//Takes a 24-bit value and calculates voltage from it.
-float MCP3911::data_to_voltage(long data)
-{
-	float voltage = (data * 1.2)/(8388608*1.5);  	//Conversion according to datasheet.
 	return voltage;
 }
+
+
+//Read chosen channel and return raw data. 
+//Function only usable in 24-bit mode.
+long MCP3911::read_raw_data(uint8_t channel)
+{
+	digitalWrite(CS_PIN, LOW);
+	SPI.transfer(ADDR_BITS | (channel << 1) | 1); //Control Byte
+	
+	byte upper = SPI.transfer(0x00);			   //Read the three bytes
+	byte middle = SPI.transfer(0x00);
+	byte lower = SPI.transfer(0x00);
+	
+	digitalWrite(CS_PIN, HIGH);
+	
+	//Concat the three bytes.
+	//When I cast the three bytes to long, they will be shifted with respect to their sign. 
+	//The back-shift by 8 bit at the end makes sure that the sign is at bit 32 instead of bit 24.
+	long combined_value = ((((long)upper << 24) | ((long)middle << 16) | (long)lower<<8) >> 8); 
+	
+	return combined_value;
+}
+
+
+//Takes a 24-bit value and calculates voltage from it.
+float MCP3911::data_to_voltage(long data, uint8_t channel)
+{
+	uint8_t gain = 0;
+	
+	if(channel == REG_CHANNEL0)
+		gain = settings.PGA_CH0;
+	else if(channel == REG_CHANNEL1)
+		gain = settings.PGA_CH1;
+	else{
+		Serial.println("Entered wrong register at data_to_voltage-function");
+		return 0;
+	}
+	
+	//Depending on which gain was chosen for the channel, the conversion is different
+	switch(gain){
+		case 0b111:	gain = 1;
+					break;
+		case 0b110: gain = 1;
+					break;
+		case 0b101: gain = 32;
+					break;
+		case 0b100: gain = 16;
+					break;
+		case 0b011: gain = 8;
+					break;
+		case 0b010: gain = 4;
+					break;
+		case 0b001: gain = 2;
+					break;
+		case 0b000: gain = 1;
+					break;
+		default:	gain = 0;
+	}
+	float voltage = (data * 1.2)/(8388608*1.5*gain);  	//Conversion according to datasheet.
+	return voltage;
+}
+
+
 
 //Enter reset mode on both Channels
 void MCP3911::enter_reset_mode(void)
 {
+	uint8_t value_conf2 = read_register(REG_CONFIG2); //Read configuration of CONFIG2-Register, so nothing gets lost
 	//Put both ADC's into reset mode
     digitalWrite(CS_PIN,LOW);
     SPI.transfer(ADDR_BITS | (REG_CONFIG2 << 1));  //Control Byte: Choose CONFIG2-Register
-    SPI.transfer(0b11000010);                      //Write RESET<1:0> to '11' to reset both ADC's
+    SPI.transfer(0b11000000 | value_conf2);        //Write RESET<1:0> to '11' to reset both ADC's
     digitalWrite(CS_PIN,HIGH);
 }
 
 //Exit reset mode on both Channels
 void MCP3911::exit_reset_mode(void)
 {
+	uint8_t value_conf2 = read_register(REG_CONFIG2); //Read configuration of CONFIG2-Register, so nothing gets lost	
 	//Exit both ADC's from reset mode
     digitalWrite(CS_PIN,LOW);
     SPI.transfer(ADDR_BITS | (REG_CONFIG2 << 1));  //Control Byte: Choose CONFIG2-Register
-    SPI.transfer(0b00000010);                      //Write RESET<1:0> to '11' to reset both ADC's
+    SPI.transfer(0b00111111 & value_conf2);        //Write RESET<1:0> to '00' to exit both ADC's reset mode
     digitalWrite(CS_PIN,HIGH);
 }
 
-//Write given offset to offset-register CH0
-void MCP3911::write_offset_ch0(long offset)
+//Write given offset to offset register of either CH0 or CH1
+void MCP3911::write_offset(long offset, uint8_t channel)
 {
 	digitalWrite(CS_PIN, LOW);
-	SPI.transfer(ADDR_BITS | (REG_OFFCAL_CH0 << 1)); //Control Byte
+	SPI.transfer(ADDR_BITS | (channel << 1)); //Control Byte
 	SPI.transfer(offset >> 16);
 	SPI.transfer(offset >> 8);
 	SPI.transfer(offset >> 0);
 	digitalWrite(CS_PIN, HIGH);
 }	
 
-//Write given offset to offset-register CH1
-void MCP3911::write_offset_ch1(long offset)
+//Read a register and return its value
+uint8_t MCP3911::read_register(uint8_t reg)
 {
 	digitalWrite(CS_PIN, LOW);
-	SPI.transfer(ADDR_BITS | (REG_OFFCAL_CH1 << 1)); //Control Byte
-	SPI.transfer(offset >> 16);
-	SPI.transfer(offset >> 8);
-	SPI.transfer(offset >> 0);
+	SPI.transfer(ADDR_BITS | (reg << 1) | 1); //Control Byte
+	byte result = SPI.transfer(0x00);			   
 	digitalWrite(CS_PIN, HIGH);
-}	
-
+	
+	return result;
+}
 
