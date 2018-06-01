@@ -1,3 +1,12 @@
+/*
+  simple_example.ino - Basic functionality sketch for the MCP3911.
+  Version 1.0
+  Created by Ruben J. Stadler, May 10, 2018.
+  <rstadler@ethz.ch>
+  
+  This sketch is licensed under the MIT license.
+*/
+
 #include <SPI.h>
 #include <arduino.h>
 #include <MCP3911.h>

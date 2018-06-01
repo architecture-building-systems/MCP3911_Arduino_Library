@@ -1,7 +1,10 @@
 /*
   MCP3911.h - Library for the MCP3911.
+  Version 1.0
   Created by Ruben J. Stadler, May 10, 2018.
-  Released into the public domain.
+  <rstadler@ethz.ch>
+  
+  This library is licensed under the MIT license.
 */
 
 #ifndef MCP3911_h

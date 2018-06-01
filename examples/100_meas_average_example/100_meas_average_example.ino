@@ -1,3 +1,13 @@
+/*
+  100_meas_average_example.ino - Using interrupts, 
+  calculate the average of 100 measurements on the MCP3911.
+  Version 1.0
+  Created by Ruben J. Stadler, May 10, 2018.
+  <rstadler@ethz.ch>
+  
+  This sketch is licensed under the MIT license.
+*/
+
 #include <SPI.h>
 #include <arduino.h>
 #include <MCP3911.h>

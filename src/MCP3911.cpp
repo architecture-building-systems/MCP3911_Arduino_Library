@@ -1,3 +1,12 @@
+/*
+  MCP3911.cpp - Library for the MCP3911.
+  Version 1.0
+  Created by Ruben J. Stadler, May 10, 2018.
+  <rstadler@ethz.ch>
+  
+  This library is licensed under the MIT license.
+*/
+
 #include "Arduino.h"
 #include "SPI.h"
 #include "MCP3911.h"
