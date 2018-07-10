@@ -16,6 +16,7 @@ MCP3911 mcp3911;
 
 int CLOCK_PIN = 9;  //Pin 9 is the OC1A-Pin of the Arduino Pro Mini and goes to OSC1-Pin of the MCP3911
 int CS_PIN = 8;     //Pin 8 of the Arduino Pro Mini goes to the CS-Pin of the MCP3911
+int INTERRUPT_PIN = 3; //Pin 3 of the Arduino Pro mini (PD3/INT1) goes to the Data_Ready-Pin of the MCP3911
 
 volatile uint8_t index = 0; //Array-Index
 long values_ch0[100] = {};  //Array for the 100 measurements
@@ -93,7 +94,7 @@ void setup() {
 
   mcp3911.configure(settings);     //Configure the MCP3911 with the settings above
 
-  attachInterrupt(digitalPinToInterrupt(3), ch0_data_interrupt, FALLING);  //Call "ch0_data_interrupt" whenever an edge on the DR-Pin occurs
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), ch0_data_interrupt, FALLING);  //Call "ch0_data_interrupt" whenever an edge on the DR-Pin occurs
 
   delay(100);                      //Add a delay until the interrupt routine has started
 
