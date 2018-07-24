@@ -4,7 +4,7 @@
   Created by Ruben J. Stadler, May 10, 2018.
   <rstadler@ethz.ch>
   
-  This sketch is licensed under the MIT license.
+  This sketch is licensed under the GPL 3.0 license.
 */
 
 #include <SPI.h>
